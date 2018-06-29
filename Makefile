@@ -1,9 +1,12 @@
 CONTRACT=watchdoggiee
 
-all: $(CONTRACT).abi $(CONTRACT).wasm
+all: $(CONTRACT).abi $(CONTRACT).wast
 
-%.wasm: %.cpp
-	eosiocpp $^
+%.wast: %.cpp
+	eosiocpp -o $@ $^
 
 %.abi: %.cpp
-	eosiocpp -o $@ $^
+	eosiocpp -g $@ $^
+
+clean:
+	rm -f $(CONTRACT).abi $(CONTRACT).wast $(CONTRACT).wasm
