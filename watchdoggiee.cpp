@@ -13,12 +13,20 @@ public:
              account_name to,
              string memo ) {
     
-    eosio_assert( from != to, "cannot transfer to self" );
+    eosio_assert( from != to, "cannot ping self" );
     require_auth( from );
     eosio_assert( is_account( to ), "to account does not exist");
-    require_recipient( from );
+    require_recipient( to );
+  }
+
+  /// @abi action 
+  void knock( account_name from,
+              account_name to ) {
+    
+    require_auth( from );
+    eosio_assert( is_account( to ), "to account does not exist");
     require_recipient( to );
   }
 };
 
-EOSIO_ABI( watchdoggiee, (ping) )
+EOSIO_ABI( watchdoggiee, (ping)(knock) )
