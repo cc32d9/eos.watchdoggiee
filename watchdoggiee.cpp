@@ -27,6 +27,12 @@ public:
     eosio_assert( is_account( to ), "to account does not exist");
     require_recipient( to );
   }
+
+  /// @abi action 
+  void test( string memo ) {
+    
+    eosio_assert( memo == "test", "the string is not what is expected" );
+  }
 };
 
-EOSIO_ABI( watchdoggiee, (ping)(knock) )
+EOSIO_ABI( watchdoggiee, (ping)(knock)(test) )
