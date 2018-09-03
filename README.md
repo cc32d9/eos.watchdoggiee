@@ -13,6 +13,9 @@ cleos -u https://eu1.eosdac.io push action watchdoggiee ping '["FROMACCOUNT", "T
 As a result, both accounts will have this "ping" transaction in their
 history of actions.
 
+Due to excessive use of this contract for sending mass notifications,
+each sender is limited to 1000 messages. Extending the limit is possible
+if you contact me at Telegram: @cc32d9
 
 
 ## Copyright and License
