@@ -9,7 +9,8 @@ So, if you need to create a dummy transaction without sending any
 tokens, just do:
 
 ```
-cleos -u https://eu1.eosdac.io push action watchdoggiee ping '["FROMACCOUNT", "TOACCOUNT", "hello world"]' -p FROMACCOUNT
+alias mcleos='cleos -u http://mainnet.eoscalgary.io'
+mcleos push action watchdoggiee ping '["FROMACCOUNT", "TOACCOUNT", "hello world"]' -p FROMACCOUNT
 ```
 
 As a result, both accounts will have this "ping" transaction in their
