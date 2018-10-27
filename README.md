@@ -3,6 +3,8 @@
 This is a simple contract that helps verifying that the watch script is
 monitoring the network and sending notifications.
 
+## Action: ping
+
 So, if you need to create a dummy transaction without sending any
 tokens, just do:
 
@@ -16,6 +18,34 @@ history of actions.
 Due to excessive use of this contract for sending mass notifications,
 each sender is limited to 1000 messages. Extending the limit is possible
 if you contact me at Telegram: @cc32d9
+
+
+## Action: setkv
+
+This action is designed for monitoring purpose: a monitoring script can
+set a key-value pair and verify its result in the EOS network. The
+sender has to have a special permission "watchdog", and the sender pays
+for RAM.
+
+```
+alias mcleos='cleos -u http://mainnet.eoscalgary.io'
+mcleos set account permission MYACCOUNT watchdog EOS8C9tb8QQhZet6WWcYFCWDKHYfjC3W59ugHCD63s7LLDQx6JsNK
+mcleos set action permission MYACCOUNT watchdoggiee setkv watchdog
+mcleos set action permission MYACCOUNT watchdoggiee delkv watchdog
+mcleos push action watchdoggiee setkv '["MYACCOUNT", "777", "777"]' -p MYACCOUNT@watchdog
+mcleos get table watchdoggiee MYACCOUNT kvs
+```
+
+## Action: delkv
+
+The action deletes a corresponding key-value pair
+
+```
+mcleos push action watchdoggiee delkv '["MYACCOUNT", "777"]' -p MYACCOUNT@watchdog
+mcleos get table watchdoggiee MYACCOUNT kvs
+```
+
+
 
 
 ## Copyright and License

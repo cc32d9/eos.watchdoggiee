@@ -1,37 +1,35 @@
 #include <eosiolib/eosio.hpp>
+#include <eosiolib/time.hpp>
 #include <string>
 
 using namespace eosio;
 using std::string;
 
-class watchdoggiee : public eosio::contract {
+class [[eosio::contract]] watchdoggiee : public eosio::contract {
 public:
-  watchdoggiee(account_name self):
-    contract(self), _counters(self, self)
+  watchdoggiee(name self, name code, datastream<const char*> ds):
+    contract(self, code, ds), _counters(self, self.value)
   {}
 
-  /// @abi table counters
-  struct counter {
-    account_name   sender;
+  struct  [[eosio::table("counters")]] counter {
+    name           sender;
     uint64_t       remaining;
-    auto primary_key()const { return sender; }
+    uint64_t primary_key()const { return sender.value; }
   };
 
-  typedef eosio::multi_index<N(counters), counter> counters;  
-  
-  /// @abi action 
-  void ping( account_name from,
-             account_name to,
-             string memo )
+  typedef eosio::multi_index<name("counters"), counter> counters;
+
+  [[eosio::action]]
+  void ping( name from, name to, string memo )
   {
     eosio_assert( from != to, "cannot ping self" );
     require_auth( from );
     eosio_assert( is_account( to ), "to account does not exist");
 
     // sender is paying for RAM in counters table
-    
-    auto cntr = _counters.find(from);
-    
+
+    auto cntr = _counters.find(from.value);
+
     if( cntr == _counters.end() ) {
       // New sender: let them send 1000 messages
       _counters.emplace(from, [&]( auto& ce ) {
@@ -53,23 +51,68 @@ public:
   }
 
 
-  /// @abi action 
-  void setlimit( account_name sender, uint64_t limit )
+  [[eosio::action]]
+  void setlimit( name sender, uint64_t limit )
   {
     require_auth( _self );
     eosio_assert(is_account( sender ), "sender does not exist");
 
-    auto cntr = _counters.find( sender );
+    auto cntr = _counters.find( sender.value );
     eosio_assert( cntr != _counters.end(), "No such counter");
     // cannot charge the sender for RAM this time
     _counters.modify( *cntr, _self, [&]( auto& ce ) {
         ce.remaining = limit;
       });
   }
+
+
   
+  struct [[eosio::table("kvs")]] kv {
+    uint64_t        key;
+    uint64_t        val;
+    time_point_sec  ts;
+    auto primary_key()const { return key; }
+  };
+
+  typedef eosio::multi_index<name("kvs"), kv> kvs;
+
+  [[eosio::action]]
+  void setkv( name owner, uint64_t key, uint64_t val )
+  {
+    require_auth(permission_level(owner, name("watchdog")));
+
+    kvs _kvs(_self, owner.value );
+    auto itr = _kvs.find( key );
+    if( itr == _kvs.end() ) {
+      _kvs.emplace( owner, [&]( auto& x ) {
+          x.key = key;
+          x.val = val;
+          x.ts = time_point_sec(now());
+        });
+    }
+    else {
+      _kvs.modify( *itr, owner, [&]( auto& x ) {
+          x.val = val;
+          x.ts = time_point_sec(now());
+        });
+    }
+  }
+
+  [[eosio::action]]
+  void delkv( name owner, uint64_t key )
+  {
+    require_auth(permission_level(owner, name("watchdog")));
+
+    kvs _kvs(_self, owner.value);
+    auto itr = _kvs.find( key );
+    eosio_assert( itr != _kvs.end(), "key-value pair does not exist" );
+    _kvs.erase(itr);
+  }
+
+
 private:
   counters _counters;
-  
+
 };
 
-EOSIO_ABI( watchdoggiee, (ping)(setlimit) )
+EOSIO_DISPATCH( watchdoggiee, (ping)(setlimit)(setkv)(delkv) )
