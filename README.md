@@ -46,6 +46,18 @@ mcleos push action watchdoggiee delkv '["MYACCOUNT", "777"]' -p MYACCOUNT@watchd
 mcleos get table watchdoggiee MYACCOUNT kvs
 ```
 
+## Using `watchdoggiee` for blockchain health monitoring
+
+I developed a number of Nagios plugins for `nodeos` health monitoring:
+https://github.com/cc32d9/eos-nagios-plugins
+
+The `check_eos_watchdoggiee` plugin is sending a transaction using one
+API URL, and reading its result using another API URL. It will alert if
+the result of transaction is not visible within the time limit, and it
+usually means that your `nodeos` is disconnected from the network or
+malfunctioning.
+
+
 
 
 
